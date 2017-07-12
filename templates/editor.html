@@ -1,0 +1,354 @@
+{% include 'header.html' %}
+{% include 'navbar.html' %}
+<script src="../static/editor/editormd.js"></script>
+<script src="../static/editor/languages/en.js"></script>
+<script src="../static/js/vendor/jquery.ui.widget.js"></script>
+<script src="../static/js/jquery.iframe-transport.js"></script>
+<script src="../static/js/jquery.fileupload.js"></script>
+<div id="layout">
+    <div>
+        <h1><input id="title" type="text" name="Title"></h1>
+        <i><span id="updatetime"></span></i>
+    </div>
+    <div class="button-container">
+        <input id="save-button" type="button" value="Save"/>
+        <input id="remove-button" type="button" value="Remove"/>
+        <input id="cancel-button" type="button" value="Cancel"/>
+        <input id="status-box" type="checkbox" name="status" value="Publish">Make it public!<br>
+    </div>
+    <div class="row edit-body">
+        <div class="col-8" id="test-editormd">
+            <textarea id="content-body" style="display:none;"></textarea>
+        </div>
+        <div id="list-container" class="col-4">
+            <div class="row image-container">
+                <input id="upload-img-button" type="button" value="Upload Image"/>
+                <!--<input id="add-caption-button" type="button" value="Add Caption"/>-->
+                <div id="dialog-img-upload" title="Upload Image">
+                      <fieldset>
+                        <legend>Select a maximum size limit: </legend>
+                        <label for="size-1">180 x 240</label>
+                        <input class="radio-size" type="radio" name="size-1" id="size-1">
+                        <label for="size-2">375 x 500</label>
+                        <input class="radio-size" type="radio" name="size-1" id="size-2">
+                        <label for="size-3">768 x 1024</label>
+                        <input class="radio-size" type="radio" name="size-1" id="size-3">
+                      </fieldset>
+                    <input id="imageupload" type="file" name="files[]" data-url="../imageupload/" multiple>
+                    <div id="status-img"></div>
+                </div>
+                <div id="image-list" class="div-vertical-scroll"></div>
+            </div>
+            <div class="row file-container">
+                <input id="fileupload" type="file" name="files[]" data-url="../fileupload/" multiple>
+                <div id="status-file"></div>
+                <div id="file-list" class="div-vertical-scroll"></div>
+            </div>
+        </div>
+    </div>
+    <div id="dialog" title="Image Link">
+        <p id="imgCode"></p>
+        <button onclick="copyToClipboard('imgCode')">Copy</button>
+    </div>
+    <div id="dialog-caption" title="Add Caption">
+        <div id="caption-image-gallery" class="div-vertical-scroll">
+            <ol id="selectable"></ol>
+        </div>
+        <p>Caption Text: <input type="text" name="ctext" id="text-box-caption" value=""></p>
+    </div>
+    <div id="dialog-fromgallery" title="Add Images from Gallery">
+        <div id="add-image-gallery" class="div-vertical-scroll">
+        </div>
+    </div>
+</div>
+<script>
+// Load data from response.
+$.getJSON( "{{ url }}", function( data ) {
+    $('#title').val(data.title);// Set title.
+    $('#status-box')[0].checked = data.status;// Set oublic/private of document.
+    populateImageList(data.images);// Create image list.
+    populateFileList(data.files);// Create file list
+    $('#content-body').text(data.content);// Set markdown code to edit.
+    var testEditor;
+    // Create editor with additional toolbars.
+    // fromgallery -> adds image to selected line from gallery.
+    // addcaption -> creates caption for image.
+    testEditor = editormd("test-editormd", {
+        width   : "60%",
+        emoji   : true, // supports github emojis
+        flowChart: true, // flowcharts can be added
+        sequenceDiagram : true,
+        htmlDecode      : true,
+        tex             : true,
+        height  : 640,
+        syncScrolling : "single",
+        path    : "../static/editor/lib/",// plugin path
+        // Add additional toolbar icons.
+        toolbarIcons : function() {
+            var s = editormd.toolbarModes['full'];
+            s.push("|");
+            s.push("addcaption");
+            s.push("fromgallery");
+            return s; // full, simple, mini
+        },
+        toolbarIconsClass : {
+            addcaption : "fa-file-image-o",
+            fromgallery: "fa-picture-o"
+        },
+        // Add explanations for additional icons
+        lang : {
+            toolbar : {
+                addcaption: "Add Caption",
+                fromgallery: "Add image from gallery"
+            }
+        },
+        // Additinal handlers
+        toolbarHandlers : {
+            /**
+             * @param {Object}      cm         CodeMirror
+             * @param {Object}      icon       jQuery
+             * @param {Object}      cursor     CodeMirror Cursor
+             * @param {String}      selection
+             */
+            addcaption : function(cm, icon, cursor, selection) {
+                $('#selectable').empty(); // clear list.
+                populateCaptionDialog(); // populate dialog.
+                $('#dialog-caption').dialog({
+                  resizable: true,
+                  height: "auto",
+                  width: 500,
+                  modal: true,
+                  buttons: {
+                      // Send caption data to server.
+                    "Create Caption": function() {
+                        var selected = $('.ui-selected');
+                        if (selected.length == 0) {
+                            alert('Please first select an image!');
+                            return;
+                        }
+                        var imgid = selected[0].id;
+                        var txt = $('#text-box-caption').val();
+                        if (txt == "") {
+                            alert('Please enter a caption text!');
+                            return;
+                        }
+                        var apiImgUrl = 'http://localhost:5000/addcaption/';
+                        $.get( apiImgUrl, { imageid: imgid, ctext: txt } )
+                          .done(function( data ) {
+                            $('#image-list').append(createImageItem(data.imageid, data.imagepath, data.thumbpath));
+                            $('.imglink').click(function (event) {
+                                event.preventDefault();
+                                $('#imgCode').text('![]('+$(this).attr('href')+')');
+                                $( "#dialog" ).dialog({
+                                    minWidth: 250
+                                });
+                            });
+                          });
+                      $( this ).dialog( "close" );
+                    },
+                    Cancel: function() {
+                      $( this ).dialog( "close" );
+                    }
+                  }
+                });
+            },
+
+            fromgallery: function(cm, icon, cursor, selection) {
+                $('#add-image-gallery').empty(); // clear list
+                // populate list
+                var images = $('.img-item');
+                $.each(images, function (i, img) {
+                    var imgid = img.id;
+                    var row = $('<div class="row img-gallery-item"/>');
+                    var thumb = $('<div class="col-3"/>');
+                    var link = $('<div class="col-9"/>');
+
+                    thumb.append('<img src="'+img.children[0].children[0].src+'">');
+                    link.append('<p>ImageID: '+imgid+'</p>');
+                    row.append(thumb);
+                    row.append(link);
+                    row.click(function (event) {
+                        event.preventDefault();
+                        cm.replaceSelection('![]('+img.children[1].children[0].href+')\n');
+                        cm.setCursor(cursor.line+1,0);
+                        cursor.line += 1;
+                    });
+                    $('#add-image-gallery').append(row);
+                });
+                $('#dialog-fromgallery').dialog({
+                  resizable: true,
+                  height: "auto",
+                  width: 500,
+                  modal: true,
+                  buttons: {
+                    "OK": function() {
+                      $( this ).dialog( "close" );
+                    }
+                  }
+                });
+            }
+        }
+    });
+});
+
+$(function () {
+    //Hide dialogs.
+    $('#dialog').hide();
+    $('#dialog-img-upload').hide();
+    $('.radio-size').checkboxradio();
+    $( "fieldset" ).controlgroup();
+    $('#size-2').click();
+
+    $('#dialog-caption').hide();
+    $('#selectable').selectable();
+    $('.img-item').draggable();
+
+    $('#dialog-fromgallery').hide();
+    //This must be in editor constructor as additional handler.
+    function createCaption() {
+        var selected = $('.ui-selected');
+        if (selected.length == 0) {
+            alert('Please first select an image!');
+            return;
+        }
+        var imgid = selected[0].id;
+        var txt = $('#text-box-caption').val();
+        if (txt == "") {
+            alert('Please enter a caption text!');
+            return;
+        }
+        var apiImgUrl = 'http://localhost:5000/addcaption/';
+        $.get( apiImgUrl, { imageid: imgid, ctext: txt } )
+          .done(function( data ) {
+            $('#image-list').append(createImageItem(data.imageid, data.imagepath, data.thumbpath));
+            $('.imglink').click(function (event) {
+                event.preventDefault();
+                $('#imgCode').text('![]('+$(this).attr('href')+')');
+                $( "#dialog" ).dialog({
+                    minWidth: 250
+                });
+            });
+          });
+
+    }
+    $('#upload-img-button').click(function (event) {
+        $('#dialog-img-upload').dialog({
+          resizable: true,
+          height: "auto",
+          width: 500,
+          modal: true,
+          buttons: {
+            "OK": function() {
+              $( this ).dialog( "close" );
+            },
+            Cancel: function() {
+              $( this ).dialog( "close" );
+            }
+          }
+        });
+    });
+
+    $('#save-button').click(function (event) {
+        var data = {};
+        data["content"] = $('#content-body').text();
+        data["title"] = $('#title').val();
+        data["status"] = $('#status-box')[0].checked;
+        console.log(JSON.stringify(data));
+        $.ajax({
+            url: "{{ url }}",
+            type: "PUT",
+            data:JSON.stringify(data),
+            processData:false,
+            contentType: "application/json"
+        }).done(function (data, textStatus, jqXHR){
+            var timestamp = new Date;
+            currentime = timestamp.toLocaleString('en-GB', { hour12: false,
+                                                day:"numeric",
+                                                month:"numeric",
+                                                year:"numeric",
+                                                hour: "numeric",
+                                                minute: "numeric"});
+            $('#updatetime').text("Updated: "+currentime);
+                console.log ("RECEIVED RESPONSE: data:",data,"; textStatus:",textStatus);
+
+        }).fail(function (jqXHR, textStatus, errorThrown){
+                console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
+        });
+    });
+
+    $('#cancel-button').click(function (event) {
+        window.location = '{{ preview_url }}'.replace(/&amp;/g, '&');
+    });
+
+    $('#remove-button').click(function (event) {
+
+        var is_confirmed = confirm("This project will be removed!");
+        if(is_confirmed) {
+            $.ajax({
+                url: "{{ delete_url }}",
+                type: "DELETE",
+                processData:false,
+                contentType: "application/json"
+            }).done(function (data, textStatus, jqXHR){
+                window.location = "../docs/?userid=" + "{{ authorid }}";
+
+            }).fail(function (jqXHR, textStatus, errorThrown){
+                console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
+            });
+        }
+
+    });
+
+    $('#imageupload').fileupload({
+    dataType: 'json',
+    //formData: [{name: 'id', value: '{{ id }}'}],
+    add: function (e, data) {
+        var fileName = "";
+        $.each(data.files, function (index, file) {
+            fileName = file.name + " ";
+        });
+        var fileList = $('<p/>').text(fileName);
+        fileList.appendTo($('#dialog-img-upload'));
+        data.context = $('<button/>').text('Upload')
+                .appendTo($('#dialog-img-upload'))
+                .click(function () {
+                    data.context = $('<p/>').text('Uploading...').replaceAll($(this));
+                    data.formData = [{name: 'id', value: '{{ id }}'}, {name: 'size', value: $("fieldset :radio:checked").attr('id')}];
+                    data.submit();
+                });
+    },
+    done: function (e, data) {
+        data.context.text('Upload finished.');
+        $('#image-list').append(createImageItem(data.result.imageid, data.result.imagepath, data.result.thumbpath));
+        $('.imglink').click(function (event) {
+            event.preventDefault();
+            $('#imgCode').text('![]('+$(this).attr('href')+')');
+            $( "#dialog" ).dialog({
+                minWidth: 250
+            });
+        });
+        var element = $('<li class="ui-state-default" id="'+data.result.imageid+'">');
+        element.append('<img src="'+data.result.thumbpath+'">');
+        $('#selectable').append(element);
+        console.log(data.result);
+    }
+    });
+
+    $('#fileupload').fileupload({
+    dataType: 'json',
+    formData: [{name: 'id', value: '{{ id }}'}],
+    add: function (e, data) {
+        data.context = $('<p/>').text('Uploading...').appendTo('#status-file');
+        data.submit();
+    },
+    done: function (e, data) {
+        data.context.text('Upload finished.');
+        $('#file-list').append(createFileItem(data.result.fileid, data.result.filepath));
+        console.log(data.result);
+    }
+    });
+
+
+});
+</script>
+{% include 'footer.html' %}

@@ -1,0 +1,71 @@
+{% include 'header.html' %}
+{% include 'navbar.html' %}
+<script src="../static/editor/lib/marked.min.js"></script>
+<script src="../static/editor/lib/prettify.min.js"></script>
+
+<script src="../static/editor/lib/raphael.min.js"></script>
+<script src="../static/editor/lib/underscore.min.js"></script>
+<script src="../static/editor/lib/sequence-diagram.min.js"></script>
+<script src="../static/editor/lib/flowchart.min.js"></script>
+<script src="../static/editor/lib/jquery.flowchart.min.js"></script>
+<script src="../static/editor/editormd.js"></script>
+<script src="../static/editor/languages/en.js"></script>
+<div class="doc">
+    <h1><span id="title"></span></h1>
+
+    <div class="button-container">
+        <input id="edit-button" type="button" value="Edit"/>
+        <input id="remove-button" type="button" value="Remove"/>
+    </div>
+    <div id="content"></div>
+    <div id="test-editormd-view">
+        <textarea id="append-test" style="display:none;"></textarea>
+    </div>
+</div>
+<script>
+    // Get markdown and render to HTML
+$.getJSON( "{{ url }}", function( data ) {
+    $('#title').text(data.title);
+    testEditormdView = editormd.markdownToHTML("test-editormd-view", {
+                        markdown        : data.content,
+                        htmlDecode      : true,
+                        //toc             : false,
+                        tocm            : true,    // Using [TOCM] Table Of Contents
+                        //tocContainer    : "#custom-toc-container", // ToC
+                        //gfm             : false,
+                        //tocDropdown     : true,
+                        // markdownSourceCode : true,
+                        emoji           : true,
+                        taskList        : true,
+                        tex             : true,
+                        flowChart       : true,
+                        sequenceDiagram : true,
+    });
+});
+
+$(function () {
+    $('#edit-button').click(function (event) {
+        window.location = '{{ edit_url }}'.replace(/&amp;/g, '&');
+    });
+
+    $('#remove-button').click(function (event) {
+
+        var is_confirmed = confirm("This project will be removed!");
+        if(is_confirmed) {
+            $.ajax({
+                url: "{{ delete_url }}",
+                type: "DELETE",
+                processData:false,
+                contentType: "application/json"
+            }).done(function (data, textStatus, jqXHR){
+                window.location = "../docs/?userid=" + "{{ authorid }}";
+
+            }).fail(function (jqXHR, textStatus, errorThrown){
+                console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
+            });
+        }
+
+    });
+});
+</script>
+{% include 'footer.html' %}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FabLab Documents</title>
+    <link rel="stylesheet" href="../../static/css/style.css" />
+    <link rel="stylesheet" href="../../static/editor/css/editormd.css" />
+    <link rel="stylesheet" href="../../static/editor/css/editormd.preview.css" />
+    <link rel="stylesheet" href="../../static/js/jquery-ui/jquery-ui.css">
+    <script src="../../static/js/jquery.min.js"></script>
+    <script src="../../static/js/jquery-ui/jquery-ui.js"></script>
+</head>
+<body>
+<script src="../../static/editor/lib/marked.min.js"></script>
+<script src="../../static/editor/lib/prettify.min.js"></script>
+
+<script src="../../static/editor/lib/raphael.min.js"></script>
+<script src="../../static/editor/lib/underscore.min.js"></script>
+<script src="../../static/editor/lib/sequence-diagram.min.js"></script>
+<script src="../../static/editor/lib/flowchart.min.js"></script>
+<script src="../../static/editor/lib/jquery.flowchart.min.js"></script>
+<script src="../../static/editor/editormd.js"></script>
+<script src="../../static/editor/languages/en.js"></script>
+<div class="doc">
+    <h1><span id="title"></span></h1>
+    <div id="content"></div>
+    <div id="test-editormd-view">
+        <textarea id="append-test" style="display:none;"></textarea>
+    </div>
+</div>
+<script>
+$.getJSON( "{{ url }}", function( data ) {
+    $('#title').text(data.title);
+    testEditormdView = editormd.markdownToHTML("test-editormd-view", {
+                        markdown        : data.content,//+ "\r\n" + $("#append-test").text(),
+                        htmlDecode      : true,
+                        //toc             : false,
+                        tocm            : true,    // Using [TOCM]
+                        //tocContainer    : "#custom-toc-container", // ToC
+                        //gfm             : false,
+                        //tocDropdown     : true,
+                        // markdownSourceCode : true,
+                        emoji           : true,
+                        taskList        : true,
+                        tex             : true,
+                        flowChart       : true,
+                        sequenceDiagram : true,
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{% extends 'basic_layout.html' %}
+{% block body %}
+<div class="body"></div>
+<div class="button-container">
+    <input id="new-button" type="button" value="Create New Project"/>
+</div>
+<script>
+$.getJSON( "{{ url }}", function( data ) {
+    var items = [];
+    var docs = data.items;
+    $.each( docs, function( key, val ) {
+        var doc = "<a href='" + "{{ base_url }}" + val.id + "'>" + 'Title: ' + val.title + ' - ID: ' + val.id + "</a>";
+        items.push( "<li id='" + key + "'>" + doc + "</li>" );
+    });
+
+    $( "<ul/>", {
+        "class": "my-new-list",
+        html: items.join( "" )
+    }).appendTo( "body" );
+});
+
+$(function () {
+    $('#new-button').click(function (event) {
+        var data = {};
+        data["content"] = "";
+        data["title"] = "New Project";
+        data["authorid"] = {{ authorid }};
+        console.log(JSON.stringify(data));
+        $.ajax({
+            url: "http://localhost:5000/api/contents/",
+            type: "POST",
+            data:JSON.stringify(data),
+            processData:false,
+            contentType: "application/json"
+        }).done(function (data, textStatus, jqXHR){
+            location.reload();
+        }).fail(function (jqXHR, textStatus, errorThrown){
+            console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
+        });
+    });
+})
+</script>
+{% endblock %}
