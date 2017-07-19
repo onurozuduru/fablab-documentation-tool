@@ -1,0 +1,33 @@
+{% include 'mobile/mobile-header.html' %}
+<!-- Image Upload Page -->
+<div data-role="page" id="page-image-upload">
+
+	<div id="header-image-upload" data-role="header" data-add-back-btn="true">
+		<h1>Upload Image</h1>
+	</div>
+
+    <div id="content-image-upload" data-role="content">
+        <form>
+            <fieldset id="fieldset-size" data-role="controlgroup">
+                <legend>Select a maximum size limit: </legend>
+                <input class="radio-size" name="size-1" id="size-1" value="size-1" type="radio">
+                <label for="size-1">180 x 240</label>
+                <input class="radio-size" name="size-1" id="size-2" value="size-2" checked="checked" type="radio">
+                <label for="size-2">375 x 500</label>
+                <input class="radio-size" name="size-1" id="size-3" value="size-3" type="radio">
+                <label for="size-3">768 x 1024</label>
+            </fieldset>
+        </form>
+        <!--<input id="file" type="file" accept="image/*">-->
+        <input id="imageupload" accept="image/*" type="file" name="files[]" data-url="../fileupload/" multiple>
+    </div>
+
+    <div data-role="footer" class="ui-bar" data-position="fixed">
+        <a id="button-upload-img" href="#" data-role="button" data-icon="check">Upload</a>
+    </div>
+
+
+</div><!-- /page -->
+
+
+{% include 'mobile/mobile-footer.html' %}

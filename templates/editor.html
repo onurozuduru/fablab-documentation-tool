@@ -47,6 +47,12 @@
         </div>
     </div>
     <div id="dialog" title="Image Link">
+        <form>
+            <label for="textarea-img-notes">Notes:    </label>
+            <textarea name="textarea-img-notes" id="textarea-img-notes"></textarea>
+        </form>
+        <p id="img-update-status"></p>
+        <input id="save-img-notes-button" type="button" value="Save Notes"/>
         <p id="imgCode"></p>
         <button onclick="copyToClipboard('imgCode')">Copy</button>
     </div>
@@ -83,6 +89,24 @@ $.getJSON( "{{ url }}", function( data ) {
         height  : 640,
         syncScrolling : "single",
         path    : "../static/editor/lib/",// plugin path
+        onchange : function() {
+            // add captions to image when something change in editor
+            $('.editormd-preview img').jcaption({
+                copyStyle: true,
+                removeStyle: false,
+                removeAlign: false,
+                copyAlignmentToClass: true
+            });
+        },
+        onload : function() {
+            // add captions to image there is already an image
+            $('.editormd-preview img').jcaption({
+                copyStyle: true,
+                removeStyle: false,
+                removeAlign: false,
+                copyAlignmentToClass: true
+            });
+        },
         // Add additional toolbar icons.
         toolbarIcons : function() {
             var s = editormd.toolbarModes['full'];
@@ -132,7 +156,7 @@ $.getJSON( "{{ url }}", function( data ) {
                             alert('Please enter a caption text!');
                             return;
                         }
-                        var apiImgUrl = 'http://localhost:5000/addcaption/';
+                        var apiImgUrl = HOST_URL + 'addcaption/';
                         $.get( apiImgUrl, { imageid: imgid, ctext: txt } )
                           .done(function( data ) {
                             $('#image-list').append(createImageItem(data.imageid, data.imagepath, data.thumbpath));
@@ -217,12 +241,22 @@ $(function () {
             alert('Please enter a caption text!');
             return;
         }
-        var apiImgUrl = 'http://localhost:5000/addcaption/';
+        var apiImgUrl = HOST_URL + 'addcaption/';
         $.get( apiImgUrl, { imageid: imgid, ctext: txt } )
           .done(function( data ) {
             $('#image-list').append(createImageItem(data.imageid, data.imagepath, data.thumbpath));
             $('.imglink').click(function (event) {
                 event.preventDefault();
+                $('#textarea-img-notes').val('');
+                $('#img-update-status').text('');
+                $('#save-img-notes-button').off();
+                var imgid = $(this).parent().parent().attr('id');
+                $.getJSON( ImageApiUrl+imgid, function( data ) {
+                    if( data.notes ) {
+                        $('#textarea-img-notes').val(data.notes);
+                    }
+                });
+                $('#save-img-notes-button').on('click', {id: imgid}, updateImageHandler);
                 $('#imgCode').text('![]('+$(this).attr('href')+')');
                 $( "#dialog" ).dialog({
                     minWidth: 250
@@ -253,7 +287,6 @@ $(function () {
         data["content"] = $('#content-body').text();
         data["title"] = $('#title').val();
         data["status"] = $('#status-box')[0].checked;
-        console.log(JSON.stringify(data));
         $.ajax({
             url: "{{ url }}",
             type: "PUT",
@@ -322,6 +355,16 @@ $(function () {
         $('#image-list').append(createImageItem(data.result.imageid, data.result.imagepath, data.result.thumbpath));
         $('.imglink').click(function (event) {
             event.preventDefault();
+            $('#textarea-img-notes').val('');
+            $('#img-update-status').text('');
+            $('#save-img-notes-button').off();
+            var imgid = $(this).parent().parent().attr('id');
+            $.getJSON( ImageApiUrl+imgid, function( data ) {
+                if( data.notes ) {
+                    $('#textarea-img-notes').val(data.notes);
+                }
+            });
+            $('#save-img-notes-button').on('click', {id: imgid}, updateImageHandler);
             $('#imgCode').text('![]('+$(this).attr('href')+')');
             $( "#dialog" ).dialog({
                 minWidth: 250

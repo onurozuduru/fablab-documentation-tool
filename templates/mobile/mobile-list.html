@@ -1,0 +1,34 @@
+{% include 'mobile/mobile-header.html' %}
+
+<div id="page-project-list" data-role="page" >
+
+	<div id="header-project-list" data-role="header">
+		<h1>Project List</h1>
+	</div>
+
+	<div id="content-project-list" data-role="content">
+         <ul id="listview-project-list" data-role="listview" data-filter="true" data-filter-placeholder="Search projects..." data-inset="true"></ul>
+    </div>
+
+    <div data-role="footer" class="ui-bar" data-position="fixed">
+        <a id="button-create-project" href="#" data-role="button" data-icon="plus">Create Project</a>
+    </div>
+
+    <div id="confirm-delete-project" class="ui-content" data-role="popup">
+        <p id="question">Are you sure you want to delete?</p>
+        <div class="ui-grid-a">
+            <div class="ui-block-a">
+                <a id="yes" class="ui-btn ui-corner-all ui-mini ui-btn-a" data-rel="back">Yes</a>
+            </div>
+            <div class="ui-block-b">
+                <a id="cancel" class="ui-btn ui-corner-all ui-mini ui-btn-a" data-rel="back">Cancel</a>
+            </div>
+        </div>
+    </div><!-- /popup -->
+
+</div>
+<script>
+    setPages({{ userid }}, "{{ projectEditUrl }}", "{{ imgEditUrl }}", "{{ imgUploadUrl }}");
+</script>
+
+{% include 'mobile/mobile-footer.html' %}

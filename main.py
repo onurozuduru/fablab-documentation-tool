@@ -10,7 +10,7 @@ from sqlalchemy import exists
 
 from api import app
 from config import FLASK_DEBUG, uploaded_images, db, uploaded_files
-from image_operations import create_thumbnail, sensitive_resize_and_overwrite, add_caption
+from image_operations import create_thumbnail, sensitive_resize_and_overwrite, add_caption, concat_images
 from models import Image, Content, File
 
 # Resize options must be the same with clients
@@ -105,6 +105,46 @@ def addcaption():
     return json.jsonify(response), 200
 
 
+@app.route('/concat/')
+def concatimages():
+    imageid_list = json.loads(request.args.get('images'))
+
+    image_list = []
+    postid = 0
+    source_folder = app.config['UPLOADED_IMAGES_DEST'] + '/'
+
+    # Create lists of image paths for concat_images function from DB.
+    for row in imageid_list:
+        r = []
+        for imgid in row:
+            #Get image
+            image = Image.query.filter(Image.imageid == int(imgid)).one()
+            #Post id is needed for new image
+            postid = image.postid
+            #Get image name from URL
+            imagepath = image.imagepath.split('/')
+            imagename = imagepath[-1]
+            r.append(source_folder+imagename)
+        # r might be empty list so, this control is needed.
+        if r:
+            image_list.append(r)
+
+    status, filename = concat_images(image_list, source_folder)
+    # Save image  with thimbnail and send details from DB.
+    if status:
+        create_thumbnail(source_folder, filename, source_folder + 'thumbnails')
+        new_image = Image(imagepath=uploaded_images.url(filename), postid=postid,
+                          thumbpath=uploaded_images.url('thumbnails/' + filename))
+        db.session.add(new_image)
+        db.session.commit()
+        response = {'imageid': new_image.imageid,
+                    'imagepath': new_image.imagepath,
+                    'notes': new_image.notes,
+                    'thumbpath': new_image.thumbpath}
+        return json.jsonify(response), 200
+    abort(500)
+
+
 @app.route('/fileupload/', methods=['POST'])
 def fileupload():
     u_file = request.files.get('files[]')
@@ -118,6 +158,42 @@ def fileupload():
     response = {'fileid': file_.fileid,
                 'filepath': file_.filepath}
     return json.jsonify(response), 200
+
+
+### Mobile Pages ###
+@app.route('/mobile/docs/')
+def mobile_project_list():
+    userid = request.args.get('userid')
+    if not userid:
+        abort(400, 'userid parameter is missing.')
+    api_url = url_for('api.contents_content_list')
+    edit_url = '/mobile/edit/?id='
+    img_edit_url = '/mobile/image/'
+    img_upload_url = '/mobile/imageupload/'
+    return render_template('mobile/mobile-list.html', userid=userid, projectEditUrl=edit_url, imgEditUrl=img_edit_url, imgUploadUrl=img_upload_url)
+
+
+@app.route('/mobile/edit/')
+def mobile_editor():
+    userid = request.args.get('userid')
+    id = request.args.get('id')
+    #delete_url = url_for('api.contents_content_item', id=id)
+    if userid and id:
+        #preview_url = '/docs/' + '?userid=' + str(userid) + '&id=' + str(id)
+        #url = url_for('api.contents_content_list') + str(id)
+        return render_template('mobile/mobile-edit.html')
+    abort(400, 'userid or id parameters are missing.')
+
+
+@app.route('/mobile/image/')
+def mobile_image_details():
+    id = request.args.get('id')
+    return render_template('mobile/mobile-edit-img.html')
+
+@app.route('/mobile/imageupload/')
+def mobile_image_upload_page():
+    id = request.args.get('id')
+    return render_template('mobile/mobile-upload-image.html')
 
 if __name__ == '__main__':
     app.run(debug=FLASK_DEBUG)

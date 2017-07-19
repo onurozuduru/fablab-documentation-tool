@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_uploads import UploadSet, IMAGES, configure_uploads, AllExcept, EXECUTABLES
 
 FLASK_DEBUG = True
+HOST_URL = 'http://10.20.203.95/'
 
 app = Flask(__name__)
 #app.wsgi_app = ProxyFix(app.wsgi_app)
@@ -20,10 +21,13 @@ app.config['RESTPLUS_VALIDATE'] = True
 app.config['RESTPLUS_MASK_SWAGGER'] = False
 app.config['ERROR_404_HELP'] = False
 
+# Uploads Settings
 app.config['SECRET_KEY'] = ('\xa3\xb6\x15\xe3E\xc4\x8c\xbaT\x14\xd1:'
                             '\xafc\x9c|.\xc0H\x8d\xf2\xe5\xbd\xd5')
 app.config['UPLOADED_IMAGES_DEST'] = 'user_images'
 app.config['UPLOADED_FILES_DEST'] = 'user_files'
+app.config['UPLOADED_IMAGES_URL'] = HOST_URL + '_uploads/images/'
+#app.config['UPLOADED_FILES_URL'] = HOST_URL + '_uploads/files/'
 
 uploaded_images = UploadSet('images', IMAGES)
 uploaded_files = UploadSet('files', AllExcept(EXECUTABLES))

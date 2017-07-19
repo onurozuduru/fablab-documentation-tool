@@ -1,0 +1,26 @@
+{% include 'mobile/mobile-header.html' %}
+<!-- Image List Page -->
+<div data-role="page" id="page-image-edit">
+
+	<div id="header-image-edit" data-role="header" data-add-back-btn="true">
+		<h1>Edit Image</h1>
+	</div>
+
+    <div id="content-image-details" data-role="content">
+        <img id="img-detail" />
+        <form>
+            <label for="textarea-img-notes">Textarea:</label>
+            <textarea name="textarea-img-notes" id="textarea-img-notes"></textarea>
+        </form>
+        <p id="img-update-status"></p>
+    </div>
+
+    <div data-role="footer" class="ui-bar" data-position="fixed">
+        <a id="button-save-img" href="#" data-role="button" data-icon="check">Save</a>
+    </div>
+
+
+</div><!-- /page -->
+
+
+{% include 'mobile/mobile-footer.html' %}

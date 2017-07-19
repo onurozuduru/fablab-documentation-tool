@@ -27,7 +27,7 @@ $(function () {
         data["authorid"] = {{ authorid }};
         console.log(JSON.stringify(data));
         $.ajax({
-            url: "http://localhost:5000/api/contents/",
+            url: HOST_URL + "api/contents/",
             type: "POST",
             data:JSON.stringify(data),
             processData:false,

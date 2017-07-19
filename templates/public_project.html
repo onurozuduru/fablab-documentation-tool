@@ -8,8 +8,10 @@
     <link rel="stylesheet" href="../../static/editor/css/editormd.css" />
     <link rel="stylesheet" href="../../static/editor/css/editormd.preview.css" />
     <link rel="stylesheet" href="../../static/js/jquery-ui/jquery-ui.css">
+    <link rel="stylesheet" href="../../static/css/caption.css" />
     <script src="../../static/js/jquery.min.js"></script>
     <script src="../../static/js/jquery-ui/jquery-ui.js"></script>
+    <script src="../../static/js/jcaption.min.js"></script>
 </head>
 <body>
 <script src="../../static/editor/lib/marked.min.js"></script>
@@ -45,7 +47,13 @@ $.getJSON( "{{ url }}", function( data ) {
                         taskList        : true,
                         tex             : true,
                         flowChart       : true,
-                        sequenceDiagram : true,
+                        sequenceDiagram : true
+    });
+    $('.editormd-html-preview img').jcaption({
+        copyStyle: true,
+        removeStyle: false,
+        removeAlign: false,
+        copyAlignmentToClass: true
     });
 });
 </script>

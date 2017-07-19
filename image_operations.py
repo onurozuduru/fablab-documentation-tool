@@ -1,10 +1,12 @@
 import uuid
+import sys
 from shutil import copy2
 
 from wand.color import Color
 from wand.drawing import Drawing
 from wand.font import Font
 from wand.image import Image
+from PIL import Image as pil_Image
 
 
 def resize_and_overwrite(filename, new_width, new_height):
@@ -72,15 +74,96 @@ def helper_concat(imgA, imgB, outputimage):
             # outputimage.composite(imageB, w, 0)
             outputimage.composite(imageB, 0, imageA.height)
 
+#
+# def vertical_concat(imgA, imgB, destination_folder=None):
+#     with Image() as outputimage:
+#         helper_concat(imgA, imgB, outputimage)
+#         output_name = 'ver_concat_'+str(uuid.uuid4())+'.png'
+#         if destination_folder:
+#             output_name = destination_folder + '/' + output_name
+#         outputimage.save(filename=output_name)
+#     return True, output_name
 
-def vertical_concat(imgA, imgB, destination_folder=None):
-    with Image() as outputimage:
-        helper_concat(imgA, imgB, outputimage)
-        output_name = 'ver_concat_'+str(uuid.uuid4())+'.png'
+
+def horizontal_concat(image_paths):
+    images = map(pil_Image.open, image_paths)
+    widths, heights = zip(*(i.size for i in images))
+
+    min_height = min(heights)
+    max_width = max(widths)
+    size = (max_width, min_height)
+
+    for image in images:
+        image.thumbnail(size, pil_Image.ANTIALIAS)
+
+    total_width = sum(i.size[0] for i in images)
+
+    new_image = pil_Image.new('RGBA', (total_width, min_height))
+
+    x_offset = 0
+    for image in images:
+        new_image.paste(image, (x_offset, 0))
+        x_offset += image.size[0]
+        image.close()
+
+    return new_image
+
+
+def vertical_concat(images):
+    #images = map(pil_Image.open, image_paths)
+    widths, heights = zip(*(i.size for i in images))
+
+    max_height = max(heights)
+    min_width = min(widths)
+    size = (min_width, max_height)
+
+    for image in images:
+        image.thumbnail(size, pil_Image.ANTIALIAS)
+
+    total_height = sum(i.size[1] for i in images)
+
+    new_image = pil_Image.new('RGBA', (min_width, total_height))
+
+    y_offset = 0
+    for image in images:
+        new_image.paste(image, (0, y_offset))
+        y_offset += image.size[1]
+        image.close()
+
+    return new_image
+
+
+def concat_images(image_paths, destination_folder=None):
+    '''
+    This function creates merged images and saves them in destination_folder if it is given,
+        or saves them the current location.
+    :param list of str list image_paths: It is list of lists which has image filenames with endings as full paths.
+                    Example: [['images/a.png', 'images/b.png'],['images/1.png', 'images/2.png']]
+                    Every element of it will be concatenated horizontally i.e. a.png and b.png and after that
+                    every horizontally concatenated list will be concatenated vertically.
+    :param str destination_folder: Folder path to save output image.
+
+    :returns Tuple of bool and str: Status of operation and file path for output image.
+    '''
+
+    horizontal_merged_images = []
+    try:
+        for images in image_paths:
+            horizontal_merged_images.append(horizontal_concat(images))
+
+        output_image = vertical_concat(horizontal_merged_images)
+        output_name = 'concat_' + str(uuid.uuid4()) + '.png'
+
         if destination_folder:
-            output_name = destination_folder + '/' + output_name
-        outputimage.save(filename=output_name)
+            output_image.save(destination_folder+output_name)
+        else:
+            output_image.save(output_name)
+    except:
+        return False, None
+
     return True, output_name
+
+
 
 
 def add_caption(filename, caption_text, destination_folder=None):

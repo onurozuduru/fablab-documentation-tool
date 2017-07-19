@@ -1,0 +1,33 @@
+{% include 'mobile/mobile-header.html' %}
+<!-- Image List Page -->
+<div data-role="page" id="page-image-list">
+
+	<div id="header-image-list" data-role="header" data-add-back-btn="true">
+		<h1>Images of Project</h1>
+	</div>
+
+	<div id="content-image-list" data-role="content">
+         <ul id="listview-image-list" data-role="listview"></ul>
+    </div>
+
+    <div data-role="footer" class="ui-bar" data-position="fixed">
+        <a id="button-add-image" href="#" data-role="button" data-icon="plus">Add Image</a>
+    </div>
+
+    <div id="confirm-delete-image" class="ui-content" data-role="popup">
+        <p id="question">Are you sure you want to delete?</p>
+        <div class="ui-grid-a">
+            <div class="ui-block-a">
+                <a id="yes" class="ui-btn ui-corner-all ui-mini ui-btn-a" data-rel="back">Yes</a>
+            </div>
+            <div class="ui-block-b">
+                <a id="cancel" class="ui-btn ui-corner-all ui-mini ui-btn-a" data-rel="back">Cancel</a>
+            </div>
+        </div>
+    </div><!-- /popup -->
+
+
+</div><!-- /page -->
+
+
+{% include 'mobile/mobile-footer.html' %}

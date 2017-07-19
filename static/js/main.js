@@ -1,4 +1,6 @@
-var ImageApiUrl = "http://localhost:5000/api/images/";
+var HOST_URL = "http://10.20.203.95/";
+var ImageApiUrl = HOST_URL + "api/images/";
+var FileApiUrl = HOST_URL + "api/files/";
 function copyToClipboard(elementId) {
     var aux = document.createElement("input");
     aux.setAttribute("value", document.getElementById(elementId).innerHTML);
@@ -16,7 +18,7 @@ function createImageItem(imgid, imgUrl, thumbUrl) {
     link.append('<a class="imglink" href="'+imgUrl+'"> Image: '+imgid+'</a>');
 
     var delImgBtn = $('<button/>', {
-        text: 'Delete', //set text 1 to 10
+        text: 'Delete',
         id: 'del_'+imgid,
         click: function () {
             var is_confirmed = confirm("This image will be removed!");
@@ -45,6 +47,27 @@ function createFileItem(fileid, fileUrl) {
     var filename = split_url[split_url.length-1];
     var row = $('<div id="'+fileid+'" class="row file-item">');
     row.append('<a class="filelink" href="'+fileUrl+'" target="_blank"> File: '+filename+'</a>');
+    var delfileBtn = $('<button/>', {
+        text: 'Delete',
+        id: 'del_'+fileid,
+        click: function () {
+            var is_confirmed = confirm("This file will be removed!");
+            if(is_confirmed) {
+                $.ajax({
+                    url: FileApiUrl+fileid,
+                    type: "DELETE",
+                    processData:false,
+                    contentType: "application/json"
+                }).done(function (data, textStatus, jqXHR){
+                    $('#file-list #'+fileid).remove();
+
+                }).fail(function (jqXHR, textStatus, errorThrown){
+                    console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
+                });
+            }
+        }
+    });
+    row.append(delfileBtn);
     return row;
 }
 function populateImageList(imgList) {
@@ -52,6 +75,16 @@ function populateImageList(imgList) {
         $('#image-list').append(createImageItem(val.id, val.imagepath, val.thumbpath));
         $('.imglink').click(function (event) {
             event.preventDefault();
+            $('#textarea-img-notes').val('');
+            $('#img-update-status').text('');
+            $('#save-img-notes-button').off();
+            var imgid = $(this).parent().parent().attr('id');
+            $.getJSON( ImageApiUrl+imgid, function( data ) {
+                if( data.notes ) {
+                    $('#textarea-img-notes').val(data.notes);
+                }
+            });
+            $('#save-img-notes-button').on('click', {id: imgid}, updateImageHandler);
             $('#imgCode').text('![]('+$(this).attr('href')+')');
             $( "#dialog" ).dialog({
                 minWidth: 250
@@ -71,5 +104,22 @@ function populateCaptionDialog() {
         var element = $('<li class="ui-state-default" id="'+imgid+'">');
         element.append('<img src="'+img.children[0].children[0].src+'">');
         $('#selectable').append(element);
+    });
+}
+
+function updateImageHandler(event) {
+    var data = {};
+    data["notes"] = $('#textarea-img-notes').val();
+    var id = event.data.id;
+    $.ajax({
+        url: ImageApiUrl+id,
+        type: "PUT",
+        data:JSON.stringify(data),
+        processData:false,
+        contentType: "application/json"
+    }).done(function (data, textStatus, jqXHR){
+        $('#img-update-status').text('Updated');
+    }).fail(function (jqXHR, textStatus, errorThrown){
+            console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
     });
 }

@@ -70,6 +70,10 @@ content_update = api.model('ContentUpdate', {
     'title': fields.String(description='Title of the project')
 })
 
+image_update = api.model('ImageUpdate', {
+    'notes': fields.String(description='User notes')
+})
+
 ## TODO restplus can return uri
 files = api.inherit('File', file_basic, {
     'posts': fields.List(fields.Nested(content))
@@ -311,6 +315,10 @@ class FileItem(Resource):
         Deletes the desired file.
         """
         file_item = File.query.filter(File.fileid == id).one()
+        if file_item.filepath:
+            file_path = file_item.filepath.split('/')
+            file_name = file_path[-1]
+            os.remove(app.config['UPLOADED_FILES_DEST']+'/'+file_name)
         db.session.delete(file_item)
         db.session.commit()
         return None, 204
@@ -367,6 +375,27 @@ class ImageItem(Resource):
         db.session.delete(img_item)
         db.session.commit()
         return None, 204
+
+    @api.expect(image_update)
+    @api.marshal_with(image, code=200)
+    def put(self, id):
+        """
+        Updates the image.
+        """
+        # Get data from request.
+        data = request.json
+        notes = data.get('notes')
+
+        # Get image from db.
+        image = Image.query.filter(Image.imageid == id).one()
+
+        # Update changes and commit to db.
+        if notes:
+            image.notes = notes
+
+        db.session.add(image)
+        db.session.commit()
+        return image, 200
 
 # Register blueprint to app
 app.register_blueprint(blueprint)

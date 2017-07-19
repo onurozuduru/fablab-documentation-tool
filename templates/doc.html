@@ -39,7 +39,13 @@ $.getJSON( "{{ url }}", function( data ) {
                         taskList        : true,
                         tex             : true,
                         flowChart       : true,
-                        sequenceDiagram : true,
+                        sequenceDiagram : true
+    });
+    $('.editormd-html-preview img').jcaption({
+        copyStyle: true,
+        removeStyle: false,
+        removeAlign: false,
+        copyAlignmentToClass: true
     });
 });
 
