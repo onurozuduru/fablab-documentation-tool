@@ -10,9 +10,12 @@ function copyToClipboard(elementId) {
 
     document.body.removeChild(aux);
 }
+function getID(itemID) {
+    return itemID.split('-')[1];
+}
 function createImageItem(imgid, imgUrl, thumbUrl) {
-    var row = $('<div id="'+imgid+'" class="row img-item">');
-    var thumb = $('<div class="col-3">');
+    var row = $('<div id="'+imgid+'" class="row img-item ui-widget-content">');
+    var thumb = $('<div id="thumb-'+imgid+'" class="thumb col-3">');
     thumb.append('<img src="'+thumbUrl+'"></img>');
     var link = $('<div class="col-9">');
     link.append('<a class="imglink" href="'+imgUrl+'"> Image: '+imgid+'</a>');
@@ -121,5 +124,35 @@ function updateImageHandler(event) {
         $('#img-update-status').text('Updated');
     }).fail(function (jqXHR, textStatus, errorThrown){
             console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
+    });
+}
+
+function createCollageHandler(collageArray) {
+    $.getJSON( HOST_URL + "concat/", {
+        images: JSON.stringify(collageArray)
+    })
+    .done(function( data ) {
+        $('#image-list').append(createImageItem(data.imageid, data.imagepath, data.thumbpath));
+        $('.imglink').click(function (event) {
+            event.preventDefault();
+            $('#textarea-img-notes').val('');
+            $('#img-update-status').text('');
+            $('#save-img-notes-button').off();
+            var imgid = $(this).parent().parent().attr('id');
+            $.getJSON( ImageApiUrl+imgid, function( data ) {
+                if( data.notes ) {
+                    $('#textarea-img-notes').val(data.notes);
+                }
+            });
+            $('#save-img-notes-button').on('click', {id: imgid}, updateImageHandler);
+            $('#imgCode').text('![]('+$(this).attr('href')+')');
+            $( "#dialog" ).dialog({
+                minWidth: 250
+            });
+        });
+        var element = $('<li class="ui-state-default" id="'+data.imageid+'">');
+        element.append('<img src="'+data.thumbpath+'">');
+        $('#selectable').append(element);
+        console.log(data);
     });
 }

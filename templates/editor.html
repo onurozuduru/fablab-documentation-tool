@@ -21,8 +21,13 @@
             <textarea id="content-body" style="display:none;"></textarea>
         </div>
         <div id="list-container" class="col-4">
-            <div class="row image-container">
+            <ul>
+                <li><a href="#tab-images">Images</a></li>
+                <li><a href="#tab-files">Files</a></li>
+            </ul>
+            <div id="tab-images" class="row image-container">
                 <input id="upload-img-button" type="button" value="Upload Image"/>
+                <input id="create-collage-button" type="button" value="Create Collage"/>
                 <!--<input id="add-caption-button" type="button" value="Add Caption"/>-->
                 <div id="dialog-img-upload" title="Upload Image">
                       <fieldset>
@@ -39,7 +44,7 @@
                 </div>
                 <div id="image-list" class="div-vertical-scroll"></div>
             </div>
-            <div class="row file-container">
+            <div id="tab-files" class="row file-container">
                 <input id="fileupload" type="file" name="files[]" data-url="../fileupload/" multiple>
                 <div id="status-file"></div>
                 <div id="file-list" class="div-vertical-scroll"></div>
@@ -66,10 +71,21 @@
         <div id="add-image-gallery" class="div-vertical-scroll">
         </div>
     </div>
+    <div id="dialog-collage" title="Create Collage">
+        <div class="row">
+            <div id="grid-collage" class="col-8">
+                <div id="gridrow-1" class="row"></div>
+                <div id="gridrow-2" class="row"></div>
+                <div id="gridrow-3" class="row"></div>
+            </div>
+            <div id="drag-image-gallery" class="col-4 div-vertical-scroll"></div>
+        </div>
+    </div>
 </div>
 <script>
 // Load data from response.
 $.getJSON( "{{ url }}", function( data ) {
+    $('#list-container').tabs();
     $('#title').val(data.title);// Set title.
     $('#status-box')[0].checked = data.status;// Set oublic/private of document.
     populateImageList(data.images);// Create image list.
@@ -219,13 +235,14 @@ $(function () {
     //Hide dialogs.
     $('#dialog').hide();
     $('#dialog-img-upload').hide();
+    $('#dialog-collage').hide();
     $('.radio-size').checkboxradio();
     $( "fieldset" ).controlgroup();
     $('#size-2').click();
 
     $('#dialog-caption').hide();
     $('#selectable').selectable();
-    $('.img-item').draggable();
+    //$('.img-item').draggable();
 
     $('#dialog-fromgallery').hide();
     //This must be in editor constructor as additional handler.
@@ -280,6 +297,96 @@ $(function () {
             }
           }
         });
+    });
+    $('#create-collage-button').click(function (event) {
+        //Clear grids
+        $('#gridrow-1').empty();
+        $('#gridrow-2').empty();
+        $('#gridrow-3').empty();
+
+        //Clear list
+        $('#drag-image-gallery').empty();
+
+        var gridrows = $('#grid-collage').children();
+        $.each(gridrows, function (index, gridrow) {
+            for(i=1; i<=3; i++) {
+                cell = $('<div class="col-4 ui-widget-header collagecell">');
+                cell.droppable({
+                    accept: ".draggable",
+                    scope: "collage",
+                    classes: {
+                        "ui-droppable-active": "ui-state-active",
+                        "ui-droppable-hover": "ui-state-hover"
+                    },
+                    drop: function( event, ui ) {
+                        $(this).empty();
+                        $(this).append('<img id="cellimg-'+getID(ui.draggable[0].id)+'" src="'+ui.draggable[0].children[0].src+'"></img>');
+                        $(this).click(function (event) {
+                            $(this).empty();
+                        });
+                    }
+                });
+                gridrow.append(cell[0]);
+            }
+        });
+        // populate list
+
+        var images = $('.img-item');
+        $.each(images, function (i, img) {
+            var imgid = img.id;
+            var row = $('<div class="row drag-image-gallery-item ui-widget-content"/>');
+            var thumb = $('<div id="cellthumb-'+ imgid +'" class="row draggable"/>');
+            var link = $('<div class="row"/>');
+
+            thumb.append('<img src="'+img.children[0].children[0].src+'">');
+            thumb.draggable({
+                revert:true,
+                scroll: false,
+                scope: "collage",
+                containment: "#grid-collage",
+                snap: ".collagecell",
+                snapMode: "inner",
+                stack: "#grid-collage",
+                zIndex: 100,
+                helper: 'clone'
+            });
+            link.append('<p>ImageID: '+imgid+'</p>');
+            row.append(thumb);
+            row.append(link);
+
+            $('#drag-image-gallery').append(row);
+        });
+
+        $('#dialog-collage').dialog({
+          resizable: true,
+          height: "auto",
+          width: 800,
+          modal: true,
+          buttons: {
+            "Create": function() {
+                var gridrows = [$('#gridrow-1'), $('#gridrow-2'), $('#gridrow-3')];
+                var collageArray = [];
+                $.each(gridrows, function (index, gridrow) {
+                    var images = gridrow.find("img");
+                    var rowCollage = [];
+                    $.each(images, function (i, image) {
+                        rowCollage.push(getID(image.id));
+                    });
+                    if(rowCollage.length != 0) {
+                        collageArray.push(rowCollage);
+                    }
+                });
+                if(collageArray.length != 0) {
+                    createCollageHandler(collageArray);
+                }
+                $( this ).dialog( "close" );
+            },
+            Cancel: function() {
+                $( this ).dialog( "close" );
+            }
+          }
+        }).parents('.ui-dialog').css('overflow', 'visible');// DO NOT REMOVE THIS LINE,
+                                // that css line makes draggable on top of other div.
     });
 
     $('#save-button').click(function (event) {
