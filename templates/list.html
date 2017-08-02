@@ -4,22 +4,41 @@
 <div class="button-container">
     <input id="new-button" type="button" value="Create New Project"/>
 </div>
+    <ul id="projectlist" class="my-new-list"></ul>
 <script>
-$.getJSON( "{{ url }}", function( data ) {
-    var items = [];
-    var docs = data.items;
-    $.each( docs, function( key, val ) {
-        var doc = "<a href='" + "{{ base_url }}" + val.id + "'>" + 'Title: ' + val.title + ' - ID: ' + val.id + "</a>";
-        items.push( "<li id='" + key + "'>" + doc + "</li>" );
-    });
+function setList() {
+    var totalPages = 1;
+    for(var i = 1; i <= totalPages; i++) {
+        $.ajax({
+            url: "{{ url }}"+"&page="+i,
+            type: "GET",
+            async: false,
+            cache: false,
+            timeout: 30000
+        }).done(function (data, textStatus, jqXHR){
+            totalPages = data.pages;
+            populateList(data.items);
 
-    $( "<ul/>", {
-        "class": "my-new-list",
-        html: items.join( "" )
-    }).appendTo( "body" );
-});
+        }).fail(function (jqXHR, textStatus, errorThrown){
+            console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
+        });
+    }
+
+}
+
+function populateList(projectList) {
+    //var items = [];
+    $.each( projectList, function( key, val ) {
+        var doc = "<a href='" + "{{ base_url }}" + val.id + "'>" + 'Title: ' + val.title + ' - ID: ' + val.id + "</a>";
+        //items.push( "<li id='" + key + "'>" + doc + "</li>" );
+        $('#projectlist').append("<li id='" + key + "'>" + doc + "</li>" );
+    });
+}
+
+
 
 $(function () {
+    setList();
     $('#new-button').click(function (event) {
         var data = {};
         data["content"] = "";
