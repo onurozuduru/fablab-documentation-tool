@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_uploads import UploadSet, IMAGES, configure_uploads, AllExcept, EXECUTABLES
 
 FLASK_DEBUG = True
-HOST_URL = 'http://10.20.203.95/'
+HOST_URL = 'http://10.20.220.45/'
 
 app = Flask(__name__)
 #app.wsgi_app = ProxyFix(app.wsgi_app)

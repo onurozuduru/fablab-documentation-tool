@@ -195,5 +195,6 @@ def mobile_image_upload_page():
     id = request.args.get('id')
     return render_template('mobile/mobile-upload-image.html')
 
+
 if __name__ == '__main__':
     app.run(debug=FLASK_DEBUG)

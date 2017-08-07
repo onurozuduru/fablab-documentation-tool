@@ -1,4 +1,4 @@
-var HOST_URL = "http://10.20.203.95/";
+var HOST_URL = "http://10.20.220.45/";
 var ImageApiUrl = HOST_URL + "api/images/";
 var FileApiUrl = HOST_URL + "api/files/";
 
