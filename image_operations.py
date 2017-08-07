@@ -3,7 +3,6 @@ import sys
 from shutil import copy2
 
 from wand.color import Color
-from wand.drawing import Drawing
 from wand.font import Font
 from wand.image import Image
 from PIL import Image as pil_Image
@@ -11,32 +10,27 @@ from PIL import Image as pil_Image
 
 def resize_and_overwrite(filename, new_width, new_height):
     with Image(filename=filename) as img:
+        # First rotate image for correct orientation.
+        # This line fix image orientation based on exif data.
+        img.auto_orient()
+
         img.sample(new_width, new_height)
         img.save(filename=filename)
     return True, filename
 
 
 def sensitive_resize_and_overwrite(filename, new_width, new_height):
+
     with Image(filename=filename) as img:
         max_size = str(new_width) + 'x' + str(new_height)
+        # First rotate image for correct orientation.
+        # This line fix image orientation based on exif data.
+        img.auto_orient()
+
         # If the image is larger than max_size, rescale with respecting ratio.
         img.transform(resize=max_size+'>')
         img.save(filename=filename)
     return True, filename
-    # with Image(filename=filename) as img:
-    #     width = img.width
-    #     height = img.height
-    #     if width < new_width and height < new_height:
-    #         return True, filename
-    #     if width > height:
-    #         ratio = float(new_width)/float(width)
-    #         new_height = int(height*ratio)
-    #     else:
-    #         ratio = float(new_height)/float(height)
-    #         new_width = int(width*ratio)
-    #     img.sample(new_width, new_height)
-    #     img.save(filename=filename)
-    # return True, filename
 
 
 def create_thumbnail(source_forlder, filename, dest_foldername):
@@ -110,7 +104,6 @@ def horizontal_concat(image_paths):
 
 
 def vertical_concat(images):
-    #images = map(pil_Image.open, image_paths)
     widths, heights = zip(*(i.size for i in images))
 
     max_height = max(heights)
@@ -121,7 +114,7 @@ def vertical_concat(images):
         image.thumbnail(size, pil_Image.ANTIALIAS)
 
     total_height = sum(i.size[1] for i in images)
-
+    #If it is changed to RGB, it will not work with PNG files.
     new_image = pil_Image.new('RGBA', (min_width, total_height))
 
     y_offset = 0
