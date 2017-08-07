@@ -1,6 +1,8 @@
 var HOST_URL = "http://10.20.203.95/";
 var ImageApiUrl = HOST_URL + "api/images/";
 var FileApiUrl = HOST_URL + "api/files/";
+
+// Takes text in the element with the given ID and copies it to clipboard.
 function copyToClipboard(elementId) {
     var aux = document.createElement("input");
     aux.setAttribute("value", document.getElementById(elementId).innerHTML);
@@ -10,21 +12,35 @@ function copyToClipboard(elementId) {
 
     document.body.removeChild(aux);
 }
+
+//Item IDs are in format of name-ID where ID is ID number of the element on database
+//  and name is meaningful identification for the item.
+//This function takes HTML id value and returns Database ID number of the item.
 function getID(itemID) {
     return itemID.split('-')[1];
 }
+
+//Helper function to create one row on image list.
+//imgid: ID of the image, will be used for generating ids for HTML elements.
+//imgUrl: URL of the real image.
+//thumbUrl: URL for the thumbnail.
+//
+//Returns a row of image as DIV element.
 function createImageItem(imgid, imgUrl, thumbUrl) {
+    //Row container.
     var row = $('<div id="'+imgid+'" class="row img-item ui-widget-content">');
+    //Create thumbnail.
     var thumb = $('<div id="thumb-'+imgid+'" class="thumb col-3">');
     thumb.append('<img src="'+thumbUrl+'"></img>');
+    //Create link for the image.
     var link = $('<div class="col-9">');
     link.append('<a class="imglink" href="'+imgUrl+'"> Image: '+imgid+'</a>');
-
+    //Create remove button for the image.
     var delImgBtn = $('<button/>', {
         text: 'Delete',
         id: 'del_'+imgid,
         click: function () {
-            var is_confirmed = confirm("This image will be removed!");
+            var is_confirmed = confirm("This image will be removed!");//Confirm before deleting.
             if(is_confirmed) {
                 $.ajax({
                     url: ImageApiUrl+imgid,
@@ -32,7 +48,7 @@ function createImageItem(imgid, imgUrl, thumbUrl) {
                     processData:false,
                     contentType: "application/json"
                 }).done(function (data, textStatus, jqXHR){
-                    $('#image-list #'+imgid).remove();
+                    $('#image-list #'+imgid).remove();//If it is removed from DB, remove from image list too.
 
                 }).fail(function (jqXHR, textStatus, errorThrown){
                     console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
@@ -43,7 +59,7 @@ function createImageItem(imgid, imgUrl, thumbUrl) {
     link.append(delImgBtn);
     row.append(thumb);
     row.append(link);
-   return row;//'<div id="'+imgid+'" class="row img-item"><div class="col-3"><i class="fa fa-picture-o" aria-hidden="true"></i></div><div class="col-9"><a class="imglink" href="'+imgUrl+'"> Image: '+imgid+'</a></div></div>';
+   return row;
 }
 function createFileItem(fileid, fileUrl) {
     var split_url = fileUrl.split("/");
