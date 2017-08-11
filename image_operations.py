@@ -38,48 +38,14 @@ def create_thumbnail(source_forlder, filename, dest_foldername):
     return sensitive_resize_and_overwrite(dest_foldername+'/'+filename, 100, 100)
 
 
-def concat(imgA, imgB):
-    with Image() as outputimage:
-        with Image(filename=imgA) as imageA:
-            with Image(filename=imgB) as imageB:
-                w = imageA.width
-                h = imageA.height
-                outputimage.blank(w, h*2)
-                outputimage.composite(imageA, 0, 0)
-                #outputimage.composite(imageB, w, 0)
-                outputimage.composite(imageB,0,h)
-                outputimage.save(filename='output.png')
-
-
-def helper_concat(imgA, imgB, outputimage):
-    with Image(filename=imgA) as imageA:
-        with Image(filename=imgB) as imageB:
-            width_A = imageA.width
-            width_B = imageB.width
-            if width_A <= width_B:
-                width_output = width_A
-                imageB.transform(resize=str(width_output) + 'x')
-            else:
-                width_output = width_B
-                imageA.transform(resize=str(width_output) + 'x')
-            height_output = imageA.height + imageB.height
-            outputimage.blank(width_output, height_output)
-            outputimage.composite(imageA, 0, 0)
-            # outputimage.composite(imageB, w, 0)
-            outputimage.composite(imageB, 0, imageA.height)
-
-#
-# def vertical_concat(imgA, imgB, destination_folder=None):
-#     with Image() as outputimage:
-#         helper_concat(imgA, imgB, outputimage)
-#         output_name = 'ver_concat_'+str(uuid.uuid4())+'.png'
-#         if destination_folder:
-#             output_name = destination_folder + '/' + output_name
-#         outputimage.save(filename=output_name)
-#     return True, output_name
-
-
 def horizontal_concat(image_paths):
+    '''
+    Helper function for concat_images. It opens the image files in image path list and,
+        It merges them horizontally.
+    Be careful, Image files are closed at the end of this function!
+    :param image_paths: List of file paths.
+    :return: One merged Image object.
+    '''
     images = map(pil_Image.open, image_paths)
     widths, heights = zip(*(i.size for i in images))
 
@@ -104,6 +70,12 @@ def horizontal_concat(image_paths):
 
 
 def vertical_concat(images):
+    '''
+    Helper function for concat_images. It merges given images in the list vertically.
+    Be careful, Image files are closed at the end of this function!
+    :param images: List of Image objects.
+    :return: One merged Image object.
+    '''
     widths, heights = zip(*(i.size for i in images))
 
     max_height = max(heights)
@@ -157,8 +129,6 @@ def concat_images(image_paths, destination_folder=None):
     return True, output_name
 
 
-
-
 def add_caption(filename, caption_text, destination_folder=None):
     with Image() as outputimage:
         with Image(filename=filename) as img:
@@ -177,3 +147,48 @@ def add_caption(filename, caption_text, destination_folder=None):
             else:
                 outputimage.save(filename=output_name)
     return True, output_name
+
+############################## UNUSED FUNCTIONS ##############################
+# Below functions are for concat operations however, they use another method
+#   by using WAND.
+#
+# def vertical_concat(imgA, imgB, destination_folder=None):
+#     with Image() as outputimage:
+#         helper_concat(imgA, imgB, outputimage)
+#         output_name = 'ver_concat_'+str(uuid.uuid4())+'.png'
+#         if destination_folder:
+#             output_name = destination_folder + '/' + output_name
+#         outputimage.save(filename=output_name)
+#     return True, output_name
+#
+#
+# def helper_concat(imgA, imgB, outputimage):
+#     with Image(filename=imgA) as imageA:
+#         with Image(filename=imgB) as imageB:
+#             width_A = imageA.width
+#             width_B = imageB.width
+#             if width_A <= width_B:
+#                 width_output = width_A
+#                 imageB.transform(resize=str(width_output) + 'x')
+#             else:
+#                 width_output = width_B
+#                 imageA.transform(resize=str(width_output) + 'x')
+#             height_output = imageA.height + imageB.height
+#             outputimage.blank(width_output, height_output)
+#             outputimage.composite(imageA, 0, 0)
+#             # outputimage.composite(imageB, w, 0)
+#             outputimage.composite(imageB, 0, imageA.height)
+#
+#
+# def concat(imgA, imgB):
+#     with Image() as outputimage:
+#         with Image(filename=imgA) as imageA:
+#             with Image(filename=imgB) as imageB:
+#                 w = imageA.width
+#                 h = imageA.height
+#                 outputimage.blank(w, h*2)
+#                 outputimage.composite(imageA, 0, 0)
+#                 #outputimage.composite(imageB, w, 0)
+#                 outputimage.composite(imageB,0,h)
+#                 outputimage.save(filename='output.png')
+##############################################################################

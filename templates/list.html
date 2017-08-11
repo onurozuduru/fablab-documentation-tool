@@ -6,6 +6,7 @@
 </div>
     <ul id="projectlist" class="my-new-list"></ul>
 <script>
+// Get all data page by page and show.
 function setList() {
     var totalPages = 1;
     for(var i = 1; i <= totalPages; i++) {
@@ -27,10 +28,8 @@ function setList() {
 }
 
 function populateList(projectList) {
-    //var items = [];
     $.each( projectList, function( key, val ) {
         var doc = "<a href='" + "{{ base_url }}" + val.id + "'>" + 'Title: ' + val.title + ' - ID: ' + val.id + "</a>";
-        //items.push( "<li id='" + key + "'>" + doc + "</li>" );
         $('#projectlist').append("<li id='" + key + "'>" + doc + "</li>" );
     });
 }

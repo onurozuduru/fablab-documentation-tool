@@ -28,7 +28,6 @@
             <div id="tab-images" class="row image-container">
                 <input id="upload-img-button" type="button" value="Upload Image"/>
                 <input id="create-collage-button" type="button" value="Create Collage"/>
-                <!--<input id="add-caption-button" type="button" value="Add Caption"/>-->
                 <div id="dialog-img-upload" title="Upload Image">
                       <fieldset>
                         <legend>Select a maximum size limit: </legend>
@@ -126,8 +125,9 @@ $.getJSON( "{{ url }}", function( data ) {
         // Add additional toolbar icons.
         toolbarIcons : function() {
             var s = editormd.toolbarModes['full'];
+            s.splice(s.indexOf("emoji"), 1);// Remove emoji button from editor, since it has a bug.
             s.push("|");
-            s.push("addcaption");
+            s.push("addcaption");// TODO this might be removed.
             s.push("fromgallery");
             return s; // full, simple, mini
         },
@@ -135,14 +135,15 @@ $.getJSON( "{{ url }}", function( data ) {
             addcaption : "fa-file-image-o",
             fromgallery: "fa-picture-o"
         },
-        // Add explanations for additional icons
+        // Add tooltip explanations for additional icons.
         lang : {
             toolbar : {
                 addcaption: "Add Caption",
                 fromgallery: "Add image from gallery"
             }
         },
-        // Additinal handlers
+        // Additional handlers.
+        // These handlers have access to cursor and user's selection.
         toolbarHandlers : {
             /**
              * @param {Object}      cm         CodeMirror
@@ -192,10 +193,11 @@ $.getJSON( "{{ url }}", function( data ) {
                   }
                 });
             },
-
+            // Add images from an image list by click on it.
             fromgallery: function(cm, icon, cursor, selection) {
                 $('#add-image-gallery').empty(); // clear list
                 // populate list
+                // Clear and populate is needed since there might be new images.
                 var images = $('.img-item');
                 $.each(images, function (i, img) {
                     var imgid = img.id;
@@ -207,9 +209,12 @@ $.getJSON( "{{ url }}", function( data ) {
                     link.append('<p>ImageID: '+imgid+'</p>');
                     row.append(thumb);
                     row.append(link);
+                    // Listener of one row.
                     row.click(function (event) {
                         event.preventDefault();
+                        //Change the line that cursor is currently placed by markdown image syntax.
                         cm.replaceSelection('![]('+img.children[1].children[0].href+')\n');
+                        //After adding the image, move cursor one line down.
                         cm.setCursor(cursor.line+1,0);
                         cursor.line += 1;
                     });
@@ -226,26 +231,28 @@ $.getJSON( "{{ url }}", function( data ) {
                     }
                   }
                 });
-            }
-        }
-    });
-});
+            }//// End of fromgallery
+        }//// End of toolbarHandlers
+    });//// End of EditorMd constructor
+});//// End of getJSON
 
-$(function () {
+$(function () {// When document is ready.
     //Hide dialogs.
     $('#dialog').hide();
     $('#dialog-img-upload').hide();
     $('#dialog-collage').hide();
+    $('#dialog-caption').hide();
+    $('#dialog-fromgallery').hide();
+
+    // Set control group for size selection of image upload.
     $('.radio-size').checkboxradio();
     $( "fieldset" ).controlgroup();
     $('#size-2').click();
 
-    $('#dialog-caption').hide();
     $('#selectable').selectable();
-    //$('.img-item').draggable();
 
-    $('#dialog-fromgallery').hide();
     //This must be in editor constructor as additional handler.
+    // TODO this seems not needed
     function createCaption() {
         var selected = $('.ui-selected');
         if (selected.length == 0) {
@@ -307,6 +314,7 @@ $(function () {
         //Clear list
         $('#drag-image-gallery').empty();
 
+        //Create grids.
         var gridrows = $('#grid-collage').children();
         $.each(gridrows, function (index, gridrow) {
             for(i=1; i<=3; i++) {
@@ -387,7 +395,7 @@ $(function () {
           }
         }).parents('.ui-dialog').css('overflow', 'visible');// DO NOT REMOVE THIS LINE,
                                 // that css line makes draggable on top of other div.
-    });
+    });//// End of create collage button listener.
 
     $('#save-button').click(function (event) {
         var data = {};
@@ -417,11 +425,11 @@ $(function () {
     });
 
     $('#cancel-button').click(function (event) {
-        window.location = '{{ preview_url }}'.replace(/&amp;/g, '&');
+        window.location = '{{ preview_url }}'.replace(/&amp;/g, '&');// To avoid confusion replace ampersands with real character.
     });
 
     $('#remove-button').click(function (event) {
-
+        // Get confirmation from user.
         var is_confirmed = confirm("This project will be removed!");
         if(is_confirmed) {
             $.ajax({
@@ -443,12 +451,14 @@ $(function () {
     dataType: 'json',
     //formData: [{name: 'id', value: '{{ id }}'}],
     add: function (e, data) {
+        // There might be multiple images, make list of images.
         var fileName = "";
         $.each(data.files, function (index, file) {
             fileName = file.name + " ";
         });
         var fileList = $('<p/>').text(fileName);
         fileList.appendTo($('#dialog-img-upload'));
+        // Create uplaod button.
         data.context = $('<button/>').text('Upload')
                 .appendTo($('#dialog-img-upload'))
                 .click(function () {
@@ -458,7 +468,8 @@ $(function () {
                 });
     },
     done: function (e, data) {
-        data.context.text('Upload finished.');
+        data.context.text('Upload finished.');// Inform user.
+        // Update images list.
         $('#image-list').append(createImageItem(data.result.imageid, data.result.imagepath, data.result.thumbpath));
         $('.imglink').click(function (event) {
             event.preventDefault();
@@ -492,7 +503,7 @@ $(function () {
         data.submit();
     },
     done: function (e, data) {
-        data.context.text('Upload finished.');
+        data.context.text('Upload finished.');// Inform user.
         $('#file-list').append(createFileItem(data.result.fileid, data.result.filepath));
         console.log(data.result);
     }

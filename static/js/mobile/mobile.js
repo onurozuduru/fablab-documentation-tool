@@ -1,6 +1,6 @@
-var contentApiUrl = "http://10.20.203.95/api/contents/";
-var imageApiUrl = "http://10.20.203.95/api/images/";
-var fileApiUrl = "http://10.20.203.95/api/files/";
+var contentApiUrl = "http://10.20.220.45/api/contents/";
+var imageApiUrl = "http://10.20.220.45/api/images/";
+var fileApiUrl = "http://10.20.220.45/api/files/";
 
 var projectEditUrl;
 var imgEditUrl;
@@ -46,6 +46,27 @@ function updateImageHandler(event) {
     }).fail(function (jqXHR, textStatus, errorThrown){
             console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
     });
+}
+
+function uploadImage(event) {
+    // var data = {};
+    // data["content"] = "";
+    // data["title"] = "New Project";
+    // data["authorid"] = authorid;
+    // console.log(JSON.stringify(data));
+    // $.ajax({
+    //     url: contentApiUrl,
+    //     type: "POST",
+    //     data:JSON.stringify(data),
+    //     processData:false,
+    //     contentType: "application/json"
+    // }).done(function (data, textStatus, jqXHR){
+    //     location.reload();
+    // }).fail(function (jqXHR, textStatus, errorThrown){
+    //     console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
+    // });
+    var formData = new FormData($('#form-image-upload'));
+    console.log(formData.keys());
 }
 
 function removeProject(contentid) {
@@ -217,5 +238,29 @@ $(document).on( "pagebeforeshow", '#page-image-edit',function( event ) {
     $('#button-save-img').on('click', {id: id}, updateImageHandler);
     $('[data-role="page"]').trigger('pagecreate');
 } );
+
+$(document).on("pagebeforeshow", '#page-image-upload', function ( event ) {
+   var id = getUrlVars()["id"];
+    $('#imageupload').fileupload({
+    dataType: 'json',
+    add: function (e, data) {
+        var fileName = "";
+        $.each(data.files, function (index, file) {
+            fileName = file.name + " ";
+        });
+
+        data.context = $('#button-upload-img')
+                .click(function () {
+                    //data.context = $('<p/>').text('Uploading...').replaceAll($(this));
+                    data.formData = [{name: 'id', value: id}, {name: 'size', value: $("fieldset :radio:checked").attr('id')}];
+                    data.submit();
+                });
+    },
+    done: function (e, data) {
+        console.log(data.result);
+    }
+    });
+   $('[data-role="page"]').trigger('pagecreate');
+});
 
 

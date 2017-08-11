@@ -190,6 +190,7 @@ def mobile_image_details():
     id = request.args.get('id')
     return render_template('mobile/mobile-edit-img.html')
 
+
 @app.route('/mobile/imageupload/')
 def mobile_image_upload_page():
     id = request.args.get('id')

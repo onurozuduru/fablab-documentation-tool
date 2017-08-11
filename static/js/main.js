@@ -61,9 +61,17 @@ function createImageItem(imgid, imgUrl, thumbUrl) {
     row.append(link);
    return row;
 }
+
+//Helper function to create one row on file list.
+//fileid: ID of the file, will be used for generating ids for HTML elements.
+//fileUrl: URL of the real file.
+//
+//Returns a row of file as DIV element.
 function createFileItem(fileid, fileUrl) {
+    // Get the file name.
     var split_url = fileUrl.split("/");
     var filename = split_url[split_url.length-1];
+    // Create row.
     var row = $('<div id="'+fileid+'" class="row file-item">');
     row.append('<a class="filelink" href="'+fileUrl+'" target="_blank"> File: '+filename+'</a>');
     var delfileBtn = $('<button/>', {
@@ -89,6 +97,7 @@ function createFileItem(fileid, fileUrl) {
     row.append(delfileBtn);
     return row;
 }
+
 function populateImageList(imgList) {
     $.each( imgList, function( key, val ) {
         $('#image-list').append(createImageItem(val.id, val.imagepath, val.thumbpath));
@@ -111,11 +120,13 @@ function populateImageList(imgList) {
         });
     });
 }
+
 function populateFileList(fileList) {
     $.each( fileList, function( key, val ) {
         $('#file-list').append(createFileItem(val.id, val.filepath));
     });
 }
+
 function populateCaptionDialog() {
     var images = $('.img-item');
     $.each(images, function (i, img) {
@@ -126,6 +137,7 @@ function populateCaptionDialog() {
     });
 }
 
+// Save notes.
 function updateImageHandler(event) {
     var data = {};
     data["notes"] = $('#textarea-img-notes').val();
@@ -143,6 +155,7 @@ function updateImageHandler(event) {
     });
 }
 
+// Create merged images.
 function createCollageHandler(collageArray) {
     $.getJSON( HOST_URL + "concat/", {
         images: JSON.stringify(collageArray)

@@ -33,10 +33,8 @@ class Image(db.Model):
     notes = db.Column(db.String)
     postid = db.Column(db.ForeignKey(u'posts.postid'), index=True)
 
-    #post = db.relationship(u'Content')
     post = db.relationship(u'Content',
-                             backref=db.backref("images", cascade="all, delete-orphan")
-                             )
+                             backref=db.backref("images", cascade="all, delete-orphan"))
 
     def __init__(self, imagepath, postid, thumbpath=None, notes=None):
         self.imagepath = imagepath

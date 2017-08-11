@@ -74,21 +74,9 @@ image_update = api.model('ImageUpdate', {
     'notes': fields.String(description='User notes')
 })
 
-## TODO restplus can return uri
 files = api.inherit('File', file_basic, {
     'posts': fields.List(fields.Nested(content))
 })
-# files = api.model('File', {
-#     'id': fields.Integer(attribute='fileid', readOnly=True, description='The unique identifier of content'),
-#     'filepath': fields.String(description='Filepath of the file'),
-#     'posts': fields.List(fields.Nested(content))
-# })
-
-# image = api.model('Image', {
-#     'id': fields.Integer(attribute='imageid', readOnly=True, description='The unique identifier of content'),
-#     'imagepath': fields.String(description='Path of the image'),
-#     'post': fields.Nested(content)
-# })
 
 image = api.inherit('Image', image_basic, {
     'post': fields.Nested(content)
@@ -124,11 +112,6 @@ user_arguments.add_argument('userid', type=int, required=False, help='ID of user
 
 content_arguments = reqparse.RequestParser()
 content_arguments.add_argument('postid', type=int, required=False, help='ID of post')
-
-# image_arguments = reqparse.RequestParser()
-# image_arguments.add_argument('op', type=str, required=False, choices=['caption', 'vconcat', 'hconcat'],
-#                              help='Operation that will be applied on image.')
-# image_arguments.add_argument('caption_text')
 
 ######## Error handlers ########
 
