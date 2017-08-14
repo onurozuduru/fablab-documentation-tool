@@ -1,6 +1,6 @@
-var contentApiUrl = "http://10.20.220.45/api/contents/";
-var imageApiUrl = "http://10.20.220.45/api/images/";
-var fileApiUrl = "http://10.20.220.45/api/files/";
+var contentApiUrl = "http://10.20.220.57/api/contents/";
+var imageApiUrl = "http://10.20.220.57/api/images/";
+var fileApiUrl = "http://10.20.220.57/api/files/";
 
 var projectEditUrl;
 var imgEditUrl;
