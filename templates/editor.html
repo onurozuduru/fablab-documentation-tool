@@ -106,7 +106,7 @@ $.getJSON( "{{ url }}", function( data ) {
         path    : "../static/editor/lib/",// plugin path
         onchange : function() {
             // add captions to image when something change in editor
-            $('.editormd-preview img').jcaption({
+            $('.editormd-preview img').not('.emoji').jcaption({
                 copyStyle: true,
                 removeStyle: false,
                 removeAlign: false,
@@ -115,7 +115,7 @@ $.getJSON( "{{ url }}", function( data ) {
         },
         onload : function() {
             // add captions to image there is already an image
-            $('.editormd-preview img').jcaption({
+            $('.editormd-preview img').not('.emoji').jcaption({
                 copyStyle: true,
                 removeStyle: false,
                 removeAlign: false,

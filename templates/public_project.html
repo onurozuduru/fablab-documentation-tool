@@ -49,7 +49,7 @@ $.getJSON( "{{ url }}", function( data ) {
                         flowChart       : true,
                         sequenceDiagram : true
     });
-    $('.editormd-html-preview img').jcaption({
+    $('.editormd-html-preview img').not('.emoji').jcaption({
         copyStyle: true,
         removeStyle: false,
         removeAlign: false,

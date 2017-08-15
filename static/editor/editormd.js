@@ -3365,7 +3365,7 @@
 
     // Emoji graphics files url path
     editormd.emoji     = {
-        path  : "http://www.emoji-cheat-sheet.com/graphics/emojis/",
+        path  : "http://www.webpagefx.com/tools/emoji-cheat-sheet/graphics/emojis/", //"http://www.emoji-cheat-sheet.com/graphics/emojis/",
         ext   : ".png"
     };
 
@@ -3471,7 +3471,7 @@
                             src     = (src === "black_large_square") ? "black_square" : src;
                             src     = (src === "moon") ? "waxing_gibbous_moon" : src;
 
-                            return "<img src=\"" + editormd.emoji.path + src + editormd.emoji.ext + "\" class=\"emoji\" title=\"&#58;" + name + "&#58;\" alt=\"&#58;" + name + "&#58;\" />";
+                            return "<img src=\"" + editormd.emoji.path + src + editormd.emoji.ext + "\" class=\"emoji\" title=\"&#58;" + name + "&#58;\" />";//alt=\"&#58;" + name + "&#58;\" />";
                         }
                     }
                 });
