@@ -60,12 +60,6 @@
         <p id="imgCode"></p>
         <button onclick="copyToClipboard('imgCode')">Copy</button>
     </div>
-    <div id="dialog-caption" title="Add Caption">
-        <div id="caption-image-gallery" class="div-vertical-scroll">
-            <ol id="selectable"></ol>
-        </div>
-        <p>Caption Text: <input type="text" name="ctext" id="text-box-caption" value=""></p>
-    </div>
     <div id="dialog-fromgallery" title="Add Images from Gallery">
         <div id="add-image-gallery" class="div-vertical-scroll">
         </div>
@@ -93,7 +87,6 @@ $.getJSON( "{{ url }}", function( data ) {
     var testEditor;
     // Create editor with additional toolbars.
     // fromgallery -> adds image to selected line from gallery.
-    // addcaption -> creates caption for image.
     testEditor = editormd("test-editormd", {
         width   : "60%",
         emoji   : true, // supports github emojis
@@ -127,23 +120,19 @@ $.getJSON( "{{ url }}", function( data ) {
             var s = editormd.toolbarModes['full'];
             s.splice(s.indexOf("emoji"), 1);// Remove emoji button from editor, since it has a bug.
             s.push("|");
-            s.push("addcaption");// TODO this might be removed.
             s.push("fromgallery");
             return s; // full, simple, mini
         },
         toolbarIconsClass : {
-            addcaption : "fa-file-image-o",
             fromgallery: "fa-picture-o"
         },
         // Add tooltip explanations for additional icons.
         lang : {
             toolbar : {
-                addcaption: "Add Caption",
                 fromgallery: "Add image from gallery"
             }
         },
         // Additional handlers.
-        // These handlers have access to cursor and user's selection.
         toolbarHandlers : {
             /**
              * @param {Object}      cm         CodeMirror
@@ -151,48 +140,6 @@ $.getJSON( "{{ url }}", function( data ) {
              * @param {Object}      cursor     CodeMirror Cursor
              * @param {String}      selection
              */
-            addcaption : function(cm, icon, cursor, selection) {
-                $('#selectable').empty(); // clear list.
-                populateCaptionDialog(); // populate dialog.
-                $('#dialog-caption').dialog({
-                  resizable: true,
-                  height: "auto",
-                  width: 500,
-                  modal: true,
-                  buttons: {
-                      // Send caption data to server.
-                    "Create Caption": function() {
-                        var selected = $('.ui-selected');
-                        if (selected.length == 0) {
-                            alert('Please first select an image!');
-                            return;
-                        }
-                        var imgid = selected[0].id;
-                        var txt = $('#text-box-caption').val();
-                        if (txt == "") {
-                            alert('Please enter a caption text!');
-                            return;
-                        }
-                        var apiImgUrl = HOST_URL + 'addcaption/';
-                        $.get( apiImgUrl, { imageid: imgid, ctext: txt } )
-                          .done(function( data ) {
-                            $('#image-list').append(createImageItem(data.imageid, data.imagepath, data.thumbpath));
-                            $('.imglink').click(function (event) {
-                                event.preventDefault();
-                                $('#imgCode').text('![]('+$(this).attr('href')+')');
-                                $( "#dialog" ).dialog({
-                                    minWidth: 250
-                                });
-                            });
-                          });
-                      $( this ).dialog( "close" );
-                    },
-                    Cancel: function() {
-                      $( this ).dialog( "close" );
-                    }
-                  }
-                });
-            },
             // Add images from an image list by click on it.
             fromgallery: function(cm, icon, cursor, selection) {
                 $('#add-image-gallery').empty(); // clear list
@@ -241,7 +188,6 @@ $(function () {// When document is ready.
     $('#dialog').hide();
     $('#dialog-img-upload').hide();
     $('#dialog-collage').hide();
-    $('#dialog-caption').hide();
     $('#dialog-fromgallery').hide();
 
     // Set control group for size selection of image upload.
@@ -251,44 +197,6 @@ $(function () {// When document is ready.
 
     $('#selectable').selectable();
 
-    //This must be in editor constructor as additional handler.
-    // TODO this seems not needed
-    function createCaption() {
-        var selected = $('.ui-selected');
-        if (selected.length == 0) {
-            alert('Please first select an image!');
-            return;
-        }
-        var imgid = selected[0].id;
-        var txt = $('#text-box-caption').val();
-        if (txt == "") {
-            alert('Please enter a caption text!');
-            return;
-        }
-        var apiImgUrl = HOST_URL + 'addcaption/';
-        $.get( apiImgUrl, { imageid: imgid, ctext: txt } )
-          .done(function( data ) {
-            $('#image-list').append(createImageItem(data.imageid, data.imagepath, data.thumbpath));
-            $('.imglink').click(function (event) {
-                event.preventDefault();
-                $('#textarea-img-notes').val('');
-                $('#img-update-status').text('');
-                $('#save-img-notes-button').off();
-                var imgid = $(this).parent().parent().attr('id');
-                $.getJSON( ImageApiUrl+imgid, function( data ) {
-                    if( data.notes ) {
-                        $('#textarea-img-notes').val(data.notes);
-                    }
-                });
-                $('#save-img-notes-button').on('click', {id: imgid}, updateImageHandler);
-                $('#imgCode').text('![]('+$(this).attr('href')+')');
-                $( "#dialog" ).dialog({
-                    minWidth: 250
-                });
-            });
-          });
-
-    }
     $('#upload-img-button').click(function (event) {
         $('#dialog-img-upload').dialog({
           resizable: true,
