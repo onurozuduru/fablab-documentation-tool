@@ -121,9 +121,21 @@ function populateImageList(imgList) {
     });
 }
 
+function fileLinkHandler(event) {
+    event.preventDefault();
+    var fileid = $(this).parent().parent().attr('id');
+    var filelink = $(this).attr('href');
+    $('#fileCode').text(filelink);
+    $('#fileDownloadLink').attr('href', filelink);
+    $( "#dialog-file-link" ).dialog({
+        minWidth: 400
+    });
+}
+
 function populateFileList(fileList) {
     $.each( fileList, function( key, val ) {
         $('#file-list').append(createFileItem(val.id, val.filepath));
+        $('.filelink').click(fileLinkHandler);
     });
 }
 

@@ -74,6 +74,15 @@
             <div id="drag-image-gallery" class="col-4 div-vertical-scroll"></div>
         </div>
     </div>
+    <div id="dialog-file-link" title="File Link">
+        <div class="row">
+            <div class="div-horizontal-scroll">
+                <p id="fileCode"></p>
+            </div>
+            <button onclick="copyToClipboard('fileCode')">Copy</button>
+            <a id="fileDownloadLink" href="#" target="_blank">Download</a>
+        </div>
+    </div>
 </div>
 <script>
 // Load data from response.
@@ -189,6 +198,7 @@ $(function () {// When document is ready.
     $('#dialog-img-upload').hide();
     $('#dialog-collage').hide();
     $('#dialog-fromgallery').hide();
+    $('#dialog-file-link').hide();
 
     // Set control group for size selection of image upload.
     $('.radio-size').checkboxradio();
@@ -413,6 +423,7 @@ $(function () {// When document is ready.
     done: function (e, data) {
         data.context.text('Upload finished.');// Inform user.
         $('#file-list').append(createFileItem(data.result.fileid, data.result.filepath));
+        $('.filelink').click(fileLinkHandler);
         console.log(data.result);
     }
     });
