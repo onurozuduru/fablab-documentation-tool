@@ -16,6 +16,7 @@ class File(db.Model):
     filepath = db.Column(db.Text)
 
     posts = db.relationship(u'Content', secondary='filemap')
+    voice = db.relationship('Image', backref='voice', lazy='dynamic')
 
     def __init__(self, filepath):
         self.filepath = filepath
@@ -32,6 +33,7 @@ class Image(db.Model):
     thumbpath = db.Column(db.Text)
     notes = db.Column(db.String)
     postid = db.Column(db.ForeignKey(u'posts.postid'), index=True)
+    voiceid = db.Column(db.ForeignKey(u'files.fileid'), index=True)
 
     post = db.relationship(u'Content',
                              backref=db.backref("images", cascade="all, delete-orphan"))

@@ -57,6 +57,7 @@
         </form>
         <p id="img-update-status"></p>
         <input id="save-img-notes-button" type="button" value="Save Notes"/>
+        <audio id="voicenote" controls></audio>
         <p id="imgCode"></p>
         <button onclick="copyToClipboard('imgCode')">Copy</button>
     </div>
@@ -398,6 +399,16 @@ $(function () {// When document is ready.
             $.getJSON( ImageApiUrl+imgid, function( data ) {
                 if( data.notes ) {
                     $('#textarea-img-notes').val(data.notes);
+                }
+                // Add voice note if there is one.
+                $('#voicenote').empty();
+                $('#voicenote').attr('src','');
+                if ( data.voiceid ) {
+                    $('#voicenote').show();
+                    $('#voicenote').attr('src',data.voice.filepath);
+                }
+                else {
+                    $('#voicenote').hide();
                 }
             });
             $('#save-img-notes-button').on('click', {id: imgid}, updateImageHandler);

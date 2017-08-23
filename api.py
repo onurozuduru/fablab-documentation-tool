@@ -40,7 +40,9 @@ image_basic = api.model('ImageBasic', {
     'id': fields.Integer(attribute='imageid', readOnly=True, description='The unique identifier of content'),
     'imagepath': fields.String(description='Path of the image'),
     'thumbpath': fields.String(description='Path of the thumbnail'),
-    'notes': fields.String(description='User notes')
+    'notes': fields.String(description='User notes'),
+    'voiceid': fields.Integer(description='ID of voice record'),
+    'voice': fields.Nested(file_basic)
 })
 
 content = api.model('Content', {

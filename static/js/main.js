@@ -111,6 +111,16 @@ function populateImageList(imgList) {
                 if( data.notes ) {
                     $('#textarea-img-notes').val(data.notes);
                 }
+                // Add voice note if there is one.
+                $('#voicenote').empty();
+                $('#voicenote').attr('src','');
+                if ( data.voiceid ) {
+                    $('#voicenote').show();
+                    $('#voicenote').attr('src',data.voice.filepath);
+                }
+                else {
+                    $('#voicenote').hide();
+                }
             });
             $('#save-img-notes-button').on('click', {id: imgid}, updateImageHandler);
             $('#imgCode').text('![]('+$(this).attr('href')+')');

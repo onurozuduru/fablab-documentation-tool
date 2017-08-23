@@ -1,4 +1,4 @@
-var contentApiUrl = "http://10.20.220.57/api/contents/";
+var contentApiUrl = "http://10.20.204.64/api/contents/";
 var imageApiUrl = "http://10.20.204.64/api/images/";
 var fileApiUrl = "http://10.20.204.64/api/files/";
 
@@ -126,6 +126,7 @@ function getUrlVars() {
 }
 
 function populateMobileProjectList( projectList, userid, editurl ) {
+    console.log(projectList);
     $.each( projectList, function( key, val ) {
         var project = "<a href='" + editurl + val.id + "&userid="+ userid +"'>" + 'Title: ' + val.title + ' - ID: ' + val.id + "</a>";
         var del = "<a href='#' class='delete' data-icon='delete'>Delete</a>";

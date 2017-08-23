@@ -5,8 +5,11 @@
 # from config import app
 # from api import api
 #
+import os
+
 from flask import render_template, request, abort, url_for, json
 from sqlalchemy import exists
+from pydub import AudioSegment
 
 from api import app
 from config import FLASK_DEBUG, uploaded_images, db, uploaded_files
@@ -154,6 +157,34 @@ def fileupload():
     db.session.add(file_)
     related_post = Content.query.filter(Content.postid == postid).one()
     related_post.files.append(file_)
+    db.session.commit()
+    response = {'fileid': file_.fileid,
+                'filepath': file_.filepath}
+    return json.jsonify(response), 200
+
+
+@app.route('/voiceupload/', methods=['POST'])
+def voiceupload():
+    u_file = request.files.get('files[]')
+    postid = request.form.get('id')
+    imageid = request.form.get('imageid')
+    filename = uploaded_files.save(u_file)
+    # Convert it to mp3.
+    filename_splitted = filename.split('.')
+    if len(filename_splitted) > 1 and filename_splitted[1] != 'mp3':
+        audio_file = AudioSegment.from_file(app.config['UPLOADED_FILES_DEST']+'/'+filename)
+        mp3_file = audio_file.export(app.config['UPLOADED_FILES_DEST']+'/'+filename_splitted[0]+'.mp3', format="mp3")
+        new_file_name = mp3_file.name
+        os.remove(app.config['UPLOADED_FILES_DEST'] + '/' + filename)
+    if(new_file_name):
+        file_ = File(filepath=uploaded_files.url(filename_splitted[0]+'.'+'mp3'))
+    else:
+        file_ = File(filepath=uploaded_files.url(filename))
+    db.session.add(file_)
+    related_post = Content.query.filter(Content.postid == postid).one()
+    related_post.files.append(file_)
+    related_image = Image.query.filter(Image.imageid == imageid).one()
+    related_image.voiceid = file_.fileid
     db.session.commit()
     response = {'fileid': file_.fileid,
                 'filepath': file_.filepath}
