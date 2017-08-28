@@ -14,7 +14,7 @@ from pydub import AudioSegment
 from api import app
 from config import FLASK_DEBUG, uploaded_images, db, uploaded_files
 from image_operations import create_thumbnail, sensitive_resize_and_overwrite, add_caption, concat_images
-from models import Image, Content, File
+from models import Image, Content, File, User
 
 # Resize options must be the same with clients
 IMAGE_SIZE ={'size-1': {'w': 180, 'h': 240},
