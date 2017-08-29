@@ -228,5 +228,25 @@ def mobile_image_upload_page():
     return render_template('mobile/mobile-upload-image.html')
 
 
+# This function checks file storing directories are created.
+# If they are not found, it creates.
+def check_user_dirs():
+    images_dir = app.config['UPLOADED_IMAGES_DEST']
+    thumbs_dir = images_dir + '/thumbnails'
+    files_dir = app.config['UPLOADED_FILES_DEST']
+    if not os.path.exists(images_dir):
+        os.makedirs(images_dir)
+        if(FLASK_DEBUG):
+            print images_dir + ' is created.'
+    if not os.path.exists(thumbs_dir):
+        os.makedirs(thumbs_dir)
+        if(FLASK_DEBUG):
+            print thumbs_dir + ' is created.'
+    if not os.path.exists(files_dir):
+        os.makedirs(files_dir)
+        if(FLASK_DEBUG):
+            print files_dir + ' is created.'
+
 if __name__ == '__main__':
+    check_user_dirs()
     app.run(debug=FLASK_DEBUG)
