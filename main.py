@@ -247,6 +247,10 @@ def check_user_dirs():
         if(FLASK_DEBUG):
             print files_dir + ' is created.'
 
+#print >> environ['wsgi.errors'], "bye %s" % os.getcwd()
+print "bye %s" % os.getcwd()
+
 if __name__ == '__main__':
+    #TODO: move this up
     check_user_dirs()
     app.run(debug=FLASK_DEBUG)
