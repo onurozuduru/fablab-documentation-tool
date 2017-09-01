@@ -87,6 +87,19 @@ $ python main.py
 
 `http://localhost:5000/docs/?userid=4`
 
+- Please note that if application cannot create folders for images and files,
+it must be created manually or paths must be changed for a desired place on `config.py`.
+
+    - In that case please create the folders with the following names under project folder:
+    `user_images`, `user_images/thumbnails`, `user_files`.
+    - Or modify the below lines for desired folders.
+
+```python
+app.config['UPLOADED_IMAGES_DEST'] = 'user_images'
+app.config['UPLOADED_FILES_DEST'] = 'user_files'
+```
+
+
 - API documentation can be reached under `/api` endpoint. For example, `http://localhost:5000/api`
 
 - To use Android application please see its Readme.md on Android client repo.
