@@ -1,12 +1,29 @@
 # FabLab Documentation Tool
 
+---
+
+__This project is still under development!__
+
+This repo only shows `v0.1`. Project will be continued to develop under below page.
+
+_Link will be available soon!_
+
+Developers:
+
+- Ivan Sanchez Milara
+- Onur Ozuduru
+
+This is code of back-end and web client, Android client can be seen from [here.](https://github.com/onurozuduru/fablab-documentation-tool-android-client)
+
+---
+
 This readme explains the following topics:
 
-- How To Install
-	- Before Installation
-	- Requirements
-	- Installation Steps
-- Missing Parts
+- [How To Install](#how-to-install)
+	- [Before Installation](#before-installation)
+	- [Requirements](#requirements)
+	- [Installation Steps](#installation-steps)
+- [Missing Parts](#missing-parts)
 
 ## How To Install
 
